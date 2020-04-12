@@ -1,28 +1,42 @@
 import logging, os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram import KeyboardButton, ReplyKeyboardMarkup 
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
 
-updater = Updater(token='912658745:AAEvvAGV-L5ajB_wkAW74eZq52K7rPtZSSM', use_context=True)
+
+
+updater = Updater(token='', use_context=True)
 dispatcher = updater.dispatcher
+url = 'http://35.228.181.111/'
+map_game = 'recreation_nsu_map'
+
 
 def start(update, context):
 	context.bot.send_message(chat_id=update.message.chat_id,
-							text='Hello, ' + update.message.chat.username + ' Use keyboard for getting information.', 
+							text='Hello. Use keyboard for getting information.',
 							reply_markup=start_menu())
 
-def start_menu():
-	button = KeyboardButton(text='Get information')
-	return ReplyKeyboardMarkup([[button]], resize_keyboard=True)	
 
-def send_information(update, context):
-	context.bot.send_photo(chat_id=update.message.chat_id, photo=open('1.jpg', 'rb'))
-	with open('t.txt') as f:
-		for line in f.readlines():
-			context.bot.send_message(chat_id=update.message.chat_id, text=line)
+def call_handler(update, context):
+	context.bot.answerCallbackQuery(
+								callback_query_id=update['callback_query']['id'],
+								url=url)
+
+
+def start_menu():
+	interactive_map = KeyboardButton(text='Get interactive map')
+	return ReplyKeyboardMarkup([[interactive_map]], resize_keyboard=True)	
+
+
+def send_map(update, context):
+	context.bot.send_game(chat_id=update.message.chat_id, game_short_name=map_game)
+
 
 dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(MessageHandler(Filters.regex('Get information'), send_information))
+dispatcher.add_handler(MessageHandler(Filters.regex('Get interactive map'), send_map))
+dispatcher.add_handler(CallbackQueryHandler(call_handler))
 updater.start_polling()
+
